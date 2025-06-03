@@ -2,8 +2,8 @@ import React, { useEffect, useState } from 'react'
 
 const Calculator = ({onDataSubmit}) => {
   
-  const [data, setData] = useState(null)
-  const [displayData, setDisplayData] = useState(null)
+  const [data, setData] = useState({})
+  const [displayData, setDisplayData] = useState({})
   const [formTarget, setFormTarget] = useState(null)
   const [formErrors, setFormErrors] = useState({})
 
@@ -14,17 +14,20 @@ const Calculator = ({onDataSubmit}) => {
     const rate = (formdata.rate || '').trim()
     const type = formdata.type
     
-    if(amount === '')errors.amount = "This field is required";
- 
+    if(amount === ''){
+      errors.amount = "This field is required";
+    } else if(isNaN(amount) || Number(amount) <=0) {
+      errors.amount = "Can't be zero/negative"
+    }
     if(term === ''){ 
       errors.term = "This field is required"
-    } else if(term === '0') {
-      errors.term = "Term can't be zero"
+    } else if(isNaN(term) || Number(term) <= 0) {
+      errors.term = "Can't be zero/negative"
     }
     if(rate === ''){ 
       errors.rate = "This field is required"
-    } else if(rate === '0') {
-      errors.rate = "Rate can't be zero"
+    } else if(isNaN(rate) || Number(rate) <= 0) {
+      errors.rate = "Can't be zero/negative"
     }
     if(type === undefined)errors.type = "This field is required"
 
@@ -44,56 +47,68 @@ const Calculator = ({onDataSubmit}) => {
    } else {
     setFormErrors({})
     setData(newdata)
-   }
+  }
   }
 
   const handleChange = (e) => {
     const {name, value} = e.target
+    const safeValue = ['amount', 'term', 'rate'].includes(name) ? Number(value) || 0 : value
     setData(prev => ({
       ...prev, 
-      [name]: name === 'amount' || name === 'term' || name === 'rate' ? parseFloat(value): value
+      [name]: safeValue
     }))
   }
 
-  const handleClick = () => {
-    setData(null)
-    setDisplayData(null)
-    formTarget.target.reset()
+  const handleClear = () => {
+    setData({})
+    setDisplayData({})
+    setFormErrors({})
+    formTarget && formTarget.target.reset()
   }
 
   const MortgageCalc = () => {
     if(data) {
+      let monthlyInterest = 0
+      let monthlyRepay = 0
+      let totalInterest = 0
+      let totalRepay = 0
 
       const {amount, term, rate, type} = data
-      const newRate = rate/100
-      
-      const base = (1 + (newRate/12))
-      const exp = term * 12
-      const res1 = Math.pow(base, exp)
-
-      const neno = (newRate/12) * res1
-      const deno = res1 - 1
-      const monthlyRepay = (amount * (neno/deno))
-      const totalRepay = monthlyRepay * exp
+      if(term === 0 || rate === 0) {
+        setDisplayData({monthlyRepay, totalRepay, totalInterest, monthlyInterest, type})
+      } else {
+        const newRate = rate/100
+        
+        const base = (1 + (newRate/12))
+        const exp = term * 12
+        const res1 = Math.pow(base, exp)
   
-      const totalInterest = totalRepay - amount
-      const monthlyInterest = totalInterest / exp
-
-      setDisplayData({monthlyRepay, totalRepay, totalInterest, monthlyInterest, type})
+        const neno = (newRate/12) * res1
+        const deno = res1 - 1
+  
+        monthlyRepay = (amount * (neno/deno)) 
+        totalRepay = (monthlyRepay * exp) 
+    
+        totalInterest = (totalRepay - amount) 
+        monthlyInterest = (totalInterest / exp)
+  
+        setDisplayData({monthlyRepay, totalRepay, totalInterest, monthlyInterest, type})
+      }
     }
     onDataSubmit(displayData)
   }
-
   
   useEffect(() => {
-    MortgageCalc()
+    if(Object.keys(data).length > 0) {
+      MortgageCalc()
+    }
   }, [data])
 
   return (
     <div className='p-8 text-neutral-Slate900 md:w-1/2'>
       <div className='flex flex-col space-y-2 justify-baseline items-baseline md:flex-row md:justify-between md:items-center  mb-8'>
         <h1 className='text-2xl font-bold'>Mortgage Calculator</h1>
-        <button className='cursor-pointer underline text-neutral-Slate700' onClick={handleClick}>Clear All</button>
+        <button className='cursor-pointer underline text-neutral-Slate700' onClick={handleClear}>Clear All</button>
       </div>
       <form onSubmit={handleSubmit} action="" className=''>
         <div className='relative mt-4'>
@@ -179,7 +194,7 @@ const Calculator = ({onDataSubmit}) => {
         <div>
           <button type='submit' className='cursor-pointer flex justify-center items-center gap-x-2 rounded-4xl bg-primary-lime hover:bg-primary-lime/60 w-full md:w-[80%] p-4 font-bold text-lg mt-8'
           >
-            <img src="./assets/images/icon-calculator.svg" alt="calculator icon" />Calculate Repayments
+            <img src={`${import.meta.env.BASE_URL}assets/images/icon-calculator.svg`}  alt="calculator icon" />Calculate Repayments
             </button>
         </div>
       </form>
