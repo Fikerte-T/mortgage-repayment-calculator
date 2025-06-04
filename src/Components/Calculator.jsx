@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 
 const Calculator = ({onDataSubmit}) => {
   
-  const [data, setData] = useState({})
+  const [formValues, setFormValues] = useState({})
   const [displayData, setDisplayData] = useState({})
   const [formTarget, setFormTarget] = useState(null)
   const [formErrors, setFormErrors] = useState({})
@@ -14,22 +14,22 @@ const Calculator = ({onDataSubmit}) => {
     const rate = (formdata.rate || '').trim()
     const type = formdata.type
     
-    if(amount === ''){
+    if(!amount){
       errors.amount = "This field is required";
     } else if(isNaN(amount) || Number(amount) <=0) {
       errors.amount = "Can't be zero/negative"
     }
-    if(term === ''){ 
+    if(!term){ 
       errors.term = "This field is required"
     } else if(isNaN(term) || Number(term) <= 0) {
       errors.term = "Can't be zero/negative"
     }
-    if(rate === ''){ 
+    if(!rate){ 
       errors.rate = "This field is required"
     } else if(isNaN(rate) || Number(rate) <= 0) {
       errors.rate = "Can't be zero/negative"
     }
-    if(type === undefined)errors.type = "This field is required"
+    if(!type)errors.type = "This field is required"
 
     return errors
 
@@ -46,63 +46,45 @@ const Calculator = ({onDataSubmit}) => {
     setFormErrors(errors)
    } else {
     setFormErrors({})
-    setData(newdata)
+    setFormValues(newdata)
   }
-  }
-
-  const handleChange = (e) => {
-    const {name, value} = e.target
-    const safeValue = ['amount', 'term', 'rate'].includes(name) ? Number(value) || 0 : value
-    setData(prev => ({
-      ...prev, 
-      [name]: safeValue
-    }))
   }
 
   const handleClear = () => {
-    setData({})
-    setDisplayData({})
+    setFormValues({})
     setFormErrors({})
-    formTarget && formTarget.target.reset()
+    onDataSubmit({})
+    formTarget?.target.reset()
   }
 
-  const MortgageCalc = () => {
-    if(data) {
-      let monthlyInterest = 0
-      let monthlyRepay = 0
-      let totalInterest = 0
-      let totalRepay = 0
+  const CalculateMortgate = (formValues) => { 
+    const {amount, term, rate, type} = formValues
+    const principal = Number(amount)
+    const months = Number(term) * 12
+    const monthlyRate = Number(rate) / 100 /12
 
-      const {amount, term, rate, type} = data
-      if(term === 0 || rate === 0) {
-        setDisplayData({monthlyRepay, totalRepay, totalInterest, monthlyInterest, type})
-      } else {
-        const newRate = rate/100
-        
-        const base = (1 + (newRate/12))
-        const exp = term * 12
-        const res1 = Math.pow(base, exp)
-  
-        const neno = (newRate/12) * res1
-        const deno = res1 - 1
-  
-        monthlyRepay = (amount * (neno/deno)) 
-        totalRepay = (monthlyRepay * exp) 
-    
-        totalInterest = (totalRepay - amount) 
-        monthlyInterest = (totalInterest / exp)
-  
-        setDisplayData({monthlyRepay, totalRepay, totalInterest, monthlyInterest, type})
-      }
-    }
-    onDataSubmit(displayData)
+    if(monthlyRate === 0 || months === 0) {
+      setDisplayData({monthlyRepay : 0, totalRepay: 0, totalInterest: 0, monthlyInterest: 0, type})
+    } else {
+      const factor = Math.pow((1 + monthlyRate), months)
+      const monthlyRepay = principal * ((monthlyRate * factor) / (factor - 1))
+      const totalRepay = monthlyRepay * months
+      const totalInterest = totalRepay - principal
+      const monthlyInterest = totalInterest / months
+
+      return ({
+        monthlyRepay, totalRepay, totalInterest, monthlyInterest, type
+      })
+    }      
   }
   
   useEffect(() => {
-    if(Object.keys(data).length > 0) {
-      MortgageCalc()
+    if(Object.keys(formValues).length > 0) {
+      const result = CalculateMortgate(formValues)
+      setDisplayData(result)
+      onDataSubmit(result)
     }
-  }, [data])
+  }, [formValues])
 
   return (
     <div className='p-8 text-neutral-Slate900 md:w-1/2'>
@@ -119,7 +101,6 @@ const Calculator = ({onDataSubmit}) => {
               ${formErrors.amount ? 'border-primary-red focus:ring-1 focus:ring-primary-red focus:border-primary-red hover:border-primary-red'
                 : 'border-neutral-400 text-neutral-Slate900 focus:ring-primary-lime focus:border-primary-lime hover:border-1 hover:border-neutral-Slate900'
               }`}
-              onChange={handleChange}
             />
             <span
               className={`absolute left-0 top-3 transform translate-y-1/2 h-12 py-3 px-4 font-semibold rounded-l-sm ${
@@ -141,7 +122,6 @@ const Calculator = ({onDataSubmit}) => {
                 ${formErrors.term ? 'border-primary-red focus:ring-1 focus:ring-primary-red focus:border-primary-red hover:border-primary-red'
                   : 'border-neutral-400 text-neutral-Slate900 focus:ring-primary-lime focus:border-primary-lime hover:border-neutral-Slate900'
                 }`}
-                onChange={handleChange}
               />
               <span
               className={`absolute right-0 top-3 transform translate-y-1/2 h-12 py-3 px-4 font-semibold rounded-r-sm ${
@@ -162,7 +142,6 @@ const Calculator = ({onDataSubmit}) => {
                 ${formErrors.rate ? 'border-primary-red focus:ring-1 focus:ring-primary-red focus:border-primary-red hover:border-primary-red'
                   : 'border-neutral-400 text-neutral-Slate900 focus:ring-primary-lime focus:border-primary-lime hover:border-neutral-Slate900'
                 }`}
-                onChange={handleChange}
               />
               <span
               className={`absolute right-0 top-3 transform translate-y-1/2 h-12 py-3 px-4 font-semibold rounded-r-sm ${
@@ -181,11 +160,11 @@ const Calculator = ({onDataSubmit}) => {
           <fieldset className='flex flex-col space-y-3 mt-4'>
             <legend className='text-neutral-Slate700'>Mortgate Type</legend>
             <label className='inline-flex gap-x-4 items-center border-1 border-neutral-400 rounded-md h-12 px-4 cursor-pointer font-bold text-neutral-Slate900 peer-hover:border-2 hover:border-primary-lime has-checked:bg-primary-lime/20 has-checked:border-primary-lime '>
-              <input type="radio" name="type" id="repayment" value="repayment" className='peer' onChange={handleChange}/>
+              <input type="radio" name="type" id="repayment" value="repayment" className='peer'/>
               <span>Repayment</span>
             </label>
             <label className='inline-flex gap-x-4 items-center border-1 border-neutral-400 rounded-md h-12 px-4 cursor-pointer font-bold text-neutral-Slate900 peer-hover:border-2 hover:border-primary-lime has-checked:bg-primary-lime/20 has-checked:border-primary-lime'>
-                <input type="radio" name="type" id="interest" value="interest" className='peer' onChange={handleChange}/>
+                <input type="radio" name="type" id="interest" value="interest" className='peer' />
                 Interest Only
             </label>
             {formErrors.type && <span className='text-primary-red text-sm'>{formErrors.type}</span>}

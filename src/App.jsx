@@ -5,7 +5,7 @@ import Calculator from './Components/Calculator'
 import Result from './Components/Result'
 
 function App() {
-  const [message, setMessage] = useState(null)
+  const [message, setMessage] = useState({})
   
   const handleDataFromCalculator = (calcData) => {
     setMessage(calcData)
