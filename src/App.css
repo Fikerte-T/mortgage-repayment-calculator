@@ -1,0 +1,83 @@
+@import "tailwindcss";
+
+
+@font-face {
+   font-family: "Plus Jakarta Sans";
+  src: url('./assets/fonts/static/PlusJakartaSans-Bold.ttf') format(truetype);
+  font-weight: 700;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Plus Jakarta Sans", sans-serif;
+  src: url('./assets/fonts/static/PlusJakartaSans-Medium.ttf') format(truetype);
+  font-weight: 500;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Plus Jakarta Sans", sans-serif;
+  src: url('./assets/fonts/static/PlusJakartaSans-VariableFont_wght.ttf') format(truetype);
+  font-weight: 400;
+  font-style: normal;
+}
+
+
+@theme {
+    --color-primary-lime: hsl(61, 70%, 52%);
+    --color-primary-red: hsl(4, 69%, 50%);
+    --color-neutral-White: hsl(0, 0%, 100%);
+    --color-neutral-Slate100: hsl(202, 86%, 94%);
+    --color-neutral-Slate300: hsl(203, 41%, 72%);
+    --color-neutral-Slate500: hsl(200, 26%, 54%);
+    --color-neutral-Slate700: hsl(200, 24%, 40%);
+    --color-neutral-Slate900: hsl(202, 55%, 16%);
+    --font-plusjakarta: 'Plus Jakarta Sans', sans-serif;
+    }
+
+
+      /* Chrome, Safari, Edge, Opera */
+  input[type=number]::-webkit-inner-spin-button,
+  input[type=number]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+
+  /* Firefox */
+  input[type=number] {
+    -moz-appearance: textfield;
+  }
+
+input[type="radio"] {
+  /* ...existing styles */
+  appearance: none;
+  background-color: #fff;
+  margin: 0;
+  font: inherit;
+  color: var(--color-neutral-Slate900);
+  width: 1.15em;
+  height: 1.15em;
+  border: 0.1em solid var(--color-neutral-Slate900);
+  border-radius: 50%;
+  transform: translateY(-0.075em);
+  display: grid;
+  place-content: center;
+}
+
+input[type="radio"]:checked {
+    border-color: var(--color-primary-lime);
+}
+
+input[type="radio"]::before {
+  content: "";
+  width: 0.65em;
+  height: 0.65em;
+  border-radius: 50%;
+  transform: scale(0);
+  transition: 120ms transform ease-in-out;
+  box-shadow: inset 1em 1em var(--color-primary-lime);
+}
+
+input[type="radio"]:checked::before {
+  transform: scale(1);
+}
