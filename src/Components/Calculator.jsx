@@ -1,11 +1,9 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useContext } from 'react'
+import { FormContext } from '../Contexts/FormContext'
 
-const Calculator = ({onDataSubmit}) => {
+const Calculator = () => {
   
-  const [formValues, setFormValues] = useState({})
-  const [displayData, setDisplayData] = useState({})
-  const [formTarget, setFormTarget] = useState(null)
-  const [formErrors, setFormErrors] = useState({})
+  const {formValues, setFormValues, setDisplayData, formTarget, setFormTarget, formErrors, setFormErrors} = useContext(FormContext)
 
   const validateForm = (formdata) => {
     const errors = {}
@@ -53,7 +51,7 @@ const Calculator = ({onDataSubmit}) => {
   const handleClear = () => {
     setFormValues({})
     setFormErrors({})
-    onDataSubmit({})
+    setDisplayData({})
     formTarget?.target.reset()
   }
 
@@ -82,7 +80,6 @@ const Calculator = ({onDataSubmit}) => {
     if(Object.keys(formValues).length > 0) {
       const result = CalculateMortgate(formValues)
       setDisplayData(result)
-      onDataSubmit(result)
     }
   }, [formValues])
 
